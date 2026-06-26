@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class TrabajadorBase(BaseModel):
@@ -29,3 +29,37 @@ class Trabajador(TrabajadorBase):
 
     class Config:
         from_attributes = True
+
+
+# Auth schemas
+
+class UserRegister(BaseModel):
+    nombre: str = Field(..., min_length=1, max_length=255)
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    telefono: Optional[str] = Field(None, max_length=50)
+    foto_url: Optional[str] = Field(
+        None, description="URL pública de la foto en Supabase Storage"
+    )
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserProfile(BaseModel):
+    id: str
+    email: str
+    nombre: str
+    telefono: Optional[str] = None
+    foto_url: Optional[str] = None
+    qr_code: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    refresh_token: str
+    expires_in: int
+    user: UserProfile
