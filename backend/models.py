@@ -71,3 +71,42 @@ class TrabajadorPublic(BaseModel):
     foto_url: Optional[str] = None
     qr_code: Optional[str] = None
     created_at: Optional[str] = None
+
+
+# Jornadas schemas
+
+class JornadaCreate(BaseModel):
+    interseccion: str = Field(..., min_length=1, max_length=255)
+
+
+class JornadaResponse(BaseModel):
+    id: str
+    trabajador_id: str
+    interseccion: str
+    inicio: str
+    fin: Optional[str] = None
+    ingreso_estimado: Optional[float] = None
+    created_at: Optional[str] = None
+
+
+# Donaciones schemas
+
+class DonacionCreate(BaseModel):
+    trabajador_id: str
+    monto: float = Field(..., gt=0)
+    metodo_pago: str = Field(
+        ...,
+        pattern="^(tarjeta_nacional|tarjeta_internacional|yape|cuotealo_bcp|pago_efectivo)$",
+    )
+    token_culqi: str
+
+
+class DonacionResponse(BaseModel):
+    id: str
+    trabajador_id: str
+    monto: float
+    monto_final: float
+    comision: float
+    metodo_pago: str
+    estado: str
+    created_at: Optional[str] = None
