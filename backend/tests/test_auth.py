@@ -16,6 +16,7 @@ def _make_mock_supabase(
     profile=None,
     create_user_side_effect=None,
     sign_in_side_effect=None,
+    upload_side_effect=None,
 ):
     mock = MagicMock()
 
@@ -44,6 +45,14 @@ def _make_mock_supabase(
         data=None
     )
 
+    # Mock storage upload
+    storage_mock = MagicMock()
+    if upload_side_effect:
+        storage_mock.from_.return_value.upload.side_effect = upload_side_effect
+    else:
+        storage_mock.from_.return_value.upload.return_value = MagicMock(data=None)
+    mock.storage = storage_mock
+
     # Mock auth.sign_in_with_password
     mock_session = MagicMock()
     mock_session.access_token = access_token
@@ -70,7 +79,10 @@ def _make_mock_supabase(
 def test_register_success():
     mock = _make_mock_supabase()
 
-    with patch("routers.auth.get_supabase", return_value=mock):
+    with patch("routers.auth.get_supabase", return_value=mock), patch(
+        "routers.auth.get_public_storage_url",
+        return_value="https://test.supabase.co/storage/v1/object/public/trabajadores-fotos/qrs/test-uuid-1234.png",
+    ):
         response = client.post(
             "/api/auth/register",
             json={
@@ -90,6 +102,7 @@ def test_register_success():
     assert data["user"]["email"] == "juan@test.com"
     assert data["user"]["nombre"] == "Juan Pérez"
     assert data["user"]["qr_code"] is not None
+    assert "qrs/test-uuid-1234.png" in data["user"]["qr_code"]
     assert data["user"]["foto_url"] == "https://example.com/foto.jpg"
 
 
@@ -149,7 +162,7 @@ def test_login_success():
         "nombre": "Juan Pérez",
         "telefono": "123456789",
         "foto_url": "https://example.com/foto.jpg",
-        "qr_code": "qr-123",
+        "qr_code": "https://test.supabase.co/storage/v1/object/public/trabajadores-fotos/qrs/test-uuid-1234.png",
         "created_at": "2024-01-01T00:00:00Z",
     }
     mock = _make_mock_supabase(profile=profile)
@@ -170,7 +183,7 @@ def test_login_success():
     assert data["expires_in"] == 3600
     assert data["user"]["email"] == "juan@test.com"
     assert data["user"]["nombre"] == "Juan Pérez"
-    assert data["user"]["qr_code"] == "qr-123"
+    assert "qrs/test-uuid-1234.png" in data["user"]["qr_code"]
     assert data["user"]["created_at"] == "2024-01-01T00:00:00Z"
 
 

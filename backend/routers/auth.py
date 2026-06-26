@@ -1,11 +1,25 @@
+import io
+import os
 import uuid
 
+import qrcode
 from fastapi import APIRouter, HTTPException, status
 
 from models import AuthResponse, UserLogin, UserProfile, UserRegister
-from supabase_client import get_supabase
+from supabase_client import get_public_storage_url, get_supabase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+QR_BUCKET = "trabajadores-fotos"
+
+
+def _generate_qr_image(trabajador_id: str) -> bytes:
+    url = f"{FRONTEND_URL}/donar/{trabajador_id}"
+    img = qrcode.make(url)
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
@@ -44,7 +58,22 @@ async def register(body: UserRegister):
         )
 
     user_id = str(user.id)
-    qr_code = str(uuid.uuid4())
+    qr_path = f"qrs/{user_id}.png"
+
+    try:
+        qr_bytes = _generate_qr_image(user_id)
+        supabase.storage.from_(QR_BUCKET).upload(
+            path=qr_path,
+            file=qr_bytes,
+            file_options={"content-type": "image/png", "upsert": "true"},
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"QR generation error: {exc}",
+        )
+
+    qr_url = get_public_storage_url(QR_BUCKET, qr_path)
 
     try:
         supabase.table("trabajadores").insert(
@@ -53,7 +82,7 @@ async def register(body: UserRegister):
                 "nombre": body.nombre,
                 "foto_url": body.foto_url,
                 "telefono": body.telefono,
-                "qr_code": qr_code,
+                "qr_code": qr_url,
             }
         ).execute()
     except Exception as exc:
@@ -84,7 +113,7 @@ async def register(body: UserRegister):
             nombre=body.nombre,
             telefono=body.telefono,
             foto_url=body.foto_url,
-            qr_code=qr_code,
+            qr_code=qr_url,
             created_at=None,
         ),
     )
