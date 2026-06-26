@@ -1,11 +1,16 @@
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import LandingPage from './pages/LandingPage'
+import DonarPage from './pages/DonarPage'
 
 function App() {
   return (
-    <div className="app">
-      <h1>Hola Mundo desde React + Vite + TS</h1>
-      <p>Frontend funcionando correctamente</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/donar" element={<DonarPage />} />
+        <Route path="/donar/:id" element={<DonarPage />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
