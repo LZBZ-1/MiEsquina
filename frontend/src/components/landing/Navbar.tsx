@@ -46,6 +46,18 @@ export default function Navbar() {
               </a>
             ))}
             <Link
+              to="/login"
+              className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors"
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              to="/register"
+              className="rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 transition-colors"
+            >
+              Crear cuenta
+            </Link>
+            <Link
               to="/donar"
               className="rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 transition-colors"
             >
@@ -82,6 +94,20 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+          <Link
+            to="/login"
+            onClick={() => setOpen(false)}
+            className="block text-base font-medium text-gray-600 hover:text-brand-600"
+          >
+            Iniciar sesión
+          </Link>
+          <Link
+            to="/register"
+            onClick={() => setOpen(false)}
+            className="block w-full text-center rounded-full bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-600"
+          >
+            Crear cuenta
+          </Link>
           <Link
             to="/donar"
             onClick={() => setOpen(false)}
