@@ -1,5 +1,10 @@
 import os
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
+
+# Asegurar que el directorio del backend esté en sys.path para imports absolutos
+sys.path.insert(0, str(Path(__file__).parent))
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
