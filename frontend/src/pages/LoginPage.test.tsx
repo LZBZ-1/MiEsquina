@@ -5,9 +5,10 @@ import LoginPage from '../pages/LoginPage'
 
 vi.mock('../lib/api', () => ({
   login: vi.fn(),
+  saveAuth: vi.fn(),
 }))
 
-import { login } from '../lib/api'
+import { login, saveAuth } from '../lib/api'
 
 describe('LoginPage', () => {
   it('renderiza los campos de email y contraseña', () => {
@@ -60,9 +61,9 @@ describe('LoginPage', () => {
     })
   })
 
-  it('guarda token y redirige al dashboard tras login exitoso', async () => {
+  it('guarda auth y redirige tras login exitoso', async () => {
     const mockedLogin = vi.mocked(login)
-    mockedLogin.mockResolvedValueOnce({
+    const authResponse = {
       access_token: 'token123',
       refresh_token: 'refresh123',
       expires_in: 3600,
@@ -71,7 +72,8 @@ describe('LoginPage', () => {
         email: 'test@test.com',
         nombre: 'Test',
       },
-    })
+    }
+    mockedLogin.mockResolvedValueOnce(authResponse)
 
     render(
       <MemoryRouter initialEntries={['/login']}>
@@ -88,7 +90,7 @@ describe('LoginPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /ingresar/i }))
 
     await waitFor(() => {
-      expect(localStorage.getItem('access_token')).toBe('token123')
+      expect(saveAuth).toHaveBeenCalledWith(authResponse)
     })
   })
 })
