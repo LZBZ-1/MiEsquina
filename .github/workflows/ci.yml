@@ -63,13 +63,13 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy Backend
-        # --dir especifica la carpeta y --detach evita que GitHub Actions se quede esperando infinitamente
-        run: railway up --service backend --dir ./backend --detach
+        # Entramos a la carpeta /backend y corremos el up con --detach
+        run: cd ./backend && railway up --service backend --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Deploy Frontend
-        # Lo mismo para el frontend
-        run: railway up --service frontend --dir ./frontend --detach
+        # Entramos a la carpeta /frontend y corremos el up con --detach
+        run: cd ./frontend && railway up --service frontend --detach
         env:
-          RAILWAY_TOKEN: ${{ secrets.RLWAY_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
