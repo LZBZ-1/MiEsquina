@@ -63,3 +63,11 @@ class AuthResponse(BaseModel):
     refresh_token: str
     expires_in: int
     user: UserProfile
+
+
+class TrabajadorPublic(BaseModel):
+    id: str
+    nombre: str
+    foto_url: Optional[str] = None
+    qr_code: Optional[str] = None
+    created_at: Optional[str] = None

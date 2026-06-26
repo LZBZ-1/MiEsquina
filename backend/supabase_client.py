@@ -17,3 +17,8 @@ def get_supabase():
             )
         _supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     return _supabase
+
+
+def get_public_storage_url(bucket: str, path: str) -> str:
+    base = SUPABASE_URL.rstrip("/")
+    return f"{base}/storage/v1/object/public/{bucket}/{path}"
