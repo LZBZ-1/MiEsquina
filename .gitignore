@@ -1,19 +1,37 @@
-/frontend/.idea
-/frontend/node_modules
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
 
-/frontend/tmp
-/frontend/out-tsc
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.DS_Store
 
-/frontend/node_modules
-/frontend/npm-debug.log*
-/frontend/yarn-debug.log*
-/frontend/yarn-error.log*
-/frontend/.pnp
-/frontend/.pnp.js
+# Backend
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/.pytest_cache/
+backend/.mypy_cache/
 
-.vscode/*
-
-backend/.idea
-backend/.venv
-
+# Environment
 .env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Misc
+.DS_Store
+*.log
