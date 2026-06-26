@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
-import { login } from '../lib/api'
+import { login, saveAuth } from '../lib/api'
 
 const schema = z.object({
   email: z.string().min(1, 'El email es obligatorio').email('Email inválido'),
@@ -30,8 +30,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const response = await login(data)
-      localStorage.setItem('access_token', response.access_token)
-      localStorage.setItem('refresh_token', response.refresh_token)
+      saveAuth(response)
       navigate('/dashboard')
     } catch (err: any) {
       setApiError(err.message || 'Credenciales inválidas')

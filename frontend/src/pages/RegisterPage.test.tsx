@@ -7,9 +7,10 @@ import RegisterPage from '../pages/RegisterPage'
 vi.mock('../lib/api', () => ({
   register: vi.fn(),
   uploadPhoto: vi.fn(),
+  saveAuth: vi.fn(),
 }))
 
-import { register, uploadPhoto } from '../lib/api'
+import { register, uploadPhoto, saveAuth } from '../lib/api'
 
 describe('RegisterPage', () => {
   beforeEach(() => {
@@ -86,12 +87,11 @@ describe('RegisterPage', () => {
     })
   })
 
-  it('registra usuario y guarda token', async () => {
+  it('registra usuario y guarda auth', async () => {
     const mockedUpload = vi.mocked(uploadPhoto)
     mockedUpload.mockResolvedValueOnce('https://example.com/photo.png')
 
-    const mockedRegister = vi.mocked(register)
-    mockedRegister.mockResolvedValueOnce({
+    const authResponse = {
       access_token: 'token123',
       refresh_token: 'refresh123',
       expires_in: 3600,
@@ -100,7 +100,9 @@ describe('RegisterPage', () => {
         email: 'test@test.com',
         nombre: 'Test',
       },
-    })
+    }
+    const mockedRegister = vi.mocked(register)
+    mockedRegister.mockResolvedValueOnce(authResponse)
 
     render(
       <MemoryRouter initialEntries={['/register']}>
@@ -121,7 +123,7 @@ describe('RegisterPage', () => {
     await user.click(screen.getByRole('button', { name: /registrarse/i }))
 
     await waitFor(() => {
-      expect(localStorage.getItem('access_token')).toBe('token123')
+      expect(saveAuth).toHaveBeenCalledWith(authResponse)
     })
   })
 })

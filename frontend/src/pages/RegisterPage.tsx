@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Link, useNavigate } from 'react-router-dom'
-import { uploadPhoto, register as registerApi } from '../lib/api'
+import { uploadPhoto, register as registerApi, saveAuth } from '../lib/api'
 
 const schema = z
   .object({
@@ -58,8 +58,7 @@ export default function RegisterPage() {
         password: data.password,
         foto_url: fotoUrl,
       })
-      localStorage.setItem('access_token', response.access_token)
-      localStorage.setItem('refresh_token', response.refresh_token)
+      saveAuth(response)
       navigate('/dashboard')
     } catch (err: any) {
       setApiError(err.message || 'Error al registrarse')

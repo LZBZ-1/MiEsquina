@@ -2,16 +2,33 @@ import io
 import os
 import uuid
 
+import jwt
 import qrcode
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from models import AuthResponse, UserLogin, UserProfile, UserRegister
 from supabase_client import get_public_storage_url, get_supabase
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+security = HTTPBearer()
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 QR_BUCKET = "trabajadores-fotos"
+JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
+
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(
+            token, JWT_SECRET, algorithms=["HS256"], audience="authenticated"
+        )
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 
 def _generate_qr_image(trabajador_id: str) -> bytes:
@@ -168,4 +185,33 @@ async def login(body: UserLogin):
             qr_code=profile["qr_code"] if profile else None,
             created_at=profile["created_at"] if profile else None,
         ),
+    )
+
+
+@router.get("/me", response_model=UserProfile)
+async def me(user: dict = Depends(get_current_user)):
+    supabase = get_supabase()
+    user_id = user.get("sub")
+
+    profile = None
+    try:
+        db_resp = (
+            supabase.table("trabajadores")
+            .select("*")
+            .eq("id", user_id)
+            .single()
+            .execute()
+        )
+        profile = db_resp.data
+    except Exception:
+        pass
+
+    return UserProfile(
+        id=user_id,
+        email=user.get("email", ""),
+        nombre=profile["nombre"] if profile else user.get("user_metadata", {}).get("nombre", ""),
+        telefono=profile["telefono"] if profile else user.get("user_metadata", {}).get("telefono"),
+        foto_url=profile["foto_url"] if profile else None,
+        qr_code=profile["qr_code"] if profile else None,
+        created_at=profile["created_at"] if profile else None,
     )

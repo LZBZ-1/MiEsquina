@@ -26,6 +26,44 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
+@router.get("/activa", response_model=JornadaResponse)
+async def get_jornada_activa(user: dict = Depends(get_current_user)):
+    supabase = get_supabase()
+    trabajador_id = user.get("sub")
+
+    try:
+        result = (
+            supabase.table("jornadas")
+            .select("*")
+            .eq("trabajador_id", trabajador_id)
+            .is_("fin", "null")
+            .single()
+            .execute()
+        )
+        jornada = result.data
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No hay jornada activa",
+        )
+
+    if not jornada:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No hay jornada activa",
+        )
+
+    return JornadaResponse(
+        id=jornada["id"],
+        trabajador_id=jornada["trabajador_id"],
+        interseccion=jornada["interseccion"],
+        inicio=jornada["inicio"],
+        fin=jornada.get("fin"),
+        ingreso_estimado=jornada.get("ingreso_estimado"),
+        created_at=jornada.get("created_at"),
+    )
+
+
 @router.post("/iniciar", response_model=JornadaResponse)
 async def iniciar_jornada(
     body: JornadaCreate, user: dict = Depends(get_current_user)
