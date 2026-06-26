@@ -14,6 +14,7 @@ from routers.auth import router as auth_router
 from routers.donaciones import router as donaciones_router
 from routers.jornadas import router as jornadas_router
 from routers.trabajadores import router as trabajadores_router
+from routers.upload import router as upload_router
 
 load_dotenv()
 
@@ -39,6 +40,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(upload_router)
 app.include_router(trabajadores_router)
 app.include_router(jornadas_router)
 app.include_router(donaciones_router)
